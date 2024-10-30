@@ -1,0 +1,40 @@
+fe : 
+  _target_ : voxdet.networks.convnextv2.ConvNextV2BackbonewithFPN3D
+  backbone_cfg :
+    num_channels: 3
+    image_size: [96, 192, 192]
+    patch_size: [2, 4, 4]
+    num_stages: 2
+    hidden_sizes: [40, 80]
+    depths: [3, 3]
+  out_channels: 256
+  returned_layers: [1, 2]
+  extra_blocks: True
+anchor_params:
+  _target_: voxdet.anchors.AnchorGeneratorBasedonStride
+  strides: [[2, 4, 4], [4, 8, 8], [8, 16, 16]]
+classes: [nodule]
+train_cfg:
+  matcher:
+    name: set_atss_matcher
+    attr:
+      num_candidates: 12
+      center_in_gt: False
+  sampler:
+    name: set_hard_negative_sampler
+    attr:
+      batch_size_per_image: 500
+      positive_fraction: 0.15
+      min_neg: 400
+      pool_size: 40
+  reg_loss:
+    box_loss:
+      _target_: voxdet.bbox_func.reg_loss.RegLoss
+      iou_loss: diou
+      l1_loss: False
+      reduction: mean
+    encode_gt: False
+    decode_pred: True
+  cls_loss: null
+
+loss_weight: auto

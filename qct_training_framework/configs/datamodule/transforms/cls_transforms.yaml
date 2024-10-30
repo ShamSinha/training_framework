@@ -1,0 +1,105 @@
+# train transforms
+train_transforms:
+  _target_: monai.transforms.Compose
+  transforms:
+    - _target_: "monai.transforms.LoadImaged"
+      keys: ["image", "roi_mask"]
+    # - _target_: src.common.transforms.monai_extras.LoadCTLoaderData
+    #   max_left_margin: 5
+    #   max_right_margin: 5
+    #   x_margin: 10
+    #   y_margin: 10
+    #   is_val: True
+    - _target_: "monai.transforms.AddChanneld"
+      keys: ["image", "roi_mask"]
+    - _target_: "monai.transforms.ThresholdIntensityd"
+      keys: ["image"]
+      above: False
+      threshold: 600
+      cval: 600
+    - _target_: "monai.transforms.ThresholdIntensityd"
+      keys: ["image"]
+      above: True
+      threshold: -1200
+      cval: -1200
+    - _target_: "monai.transforms.ScaleIntensityRanged"
+      keys: ["image"]
+      a_min: -1200
+      a_max: 600
+    - _target_: "monai.transforms.RandScaleCropd"
+      keys: ["image", "roi_mask"]
+      roi_scale: 0.8
+      random_center: False
+      max_roi_scale: 1.0
+      random_size: True
+    - _target_: "monai.transforms.Resized"
+      keys: ["image", "roi_mask"]
+      spatial_size: [32, 64, 64]
+    - _target_: "monai.transforms.RandAffined"
+      keys: ["image", "roi_mask"]
+      prob: 0.1
+      translate_range: [2, 5, 5]
+      shear_range: 0.1
+    - _target_: "monai.transforms.RandFlipd"
+      keys: ["image", "roi_mask"]
+      prob: 0.3
+      spatial_axis: [0]
+    - _target_: "monai.transforms.RandFlipd"
+      keys: ["image", "roi_mask"]
+      prob: 0.3
+      spatial_axis: [1]
+    - _target_: "monai.transforms.RandFlipd"
+      keys: ["image", "roi_mask"]
+      prob: 0.3
+      spatial_axis: [2]
+    - _target_: "monai.transforms.DivisiblePadd"
+      keys: ["image", "roi_mask"]
+      k: 32
+      constant_values: 0
+    # - _target_: monai.transforms.Transposed
+    #   keys: ["image"] # C W H D
+    #   indices: [0, 3, 1, 2]
+    - _target_: "monai.transforms.EnsureTyped"
+      keys: ["image", "roi_mask"]
+
+# Val transforms if test transforms is not mentioned
+# use the val transforms as test transforms
+val_transforms:
+  _target_: monai.transforms.Compose
+  transforms:
+    - _target_: "monai.transforms.LoadImaged"
+      keys: ["image", "roi_mask"]
+    # - _target_: src.common.transforms.monai_extras.LoadCTLoaderData
+    #   max_left_margin: 5
+    #   max_right_margin: 5
+    #   x_margin: 10
+    #   y_margin: 10
+    #   is_val: True
+    - _target_: "monai.transforms.AddChanneld"
+      keys: ["image", "roi_mask"]
+    - _target_: "monai.transforms.ThresholdIntensityd"
+      keys: ["image"]
+      above: False
+      threshold: 600
+      cval: 600
+    - _target_: "monai.transforms.ThresholdIntensityd"
+      keys: ["image"]
+      above: True
+      threshold: -1200
+      cval: -1200
+    - _target_: "monai.transforms.ScaleIntensityRanged"
+      keys: ["image"]
+      a_min: -1200
+      a_max: 600
+    - _target_: "monai.transforms.Resized"
+      keys: ["image", "roi_mask"]
+      spatial_size: [32, 64, 64]
+    - _target_: "monai.transforms.DivisiblePadd"
+      keys: ["image", "roi_mask"]
+      k: 32
+      constant_values: 0
+    # - _target_: monai.transforms.Transposed
+    #   keys: ["image"]
+    #   indices: [0, 3, 1, 2]
+    - _target_: "monai.transforms.EnsureTyped"
+      keys: ["image", "roi_mask"]

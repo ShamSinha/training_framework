@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "voxdet"
+  site-url: "https://qureai.github.io/qct_nodule_detection"
+  description: "voxel obj detection"
+  repo-branch: main
+  repo-url: "https://github.com/qureai/qct_nodule_detection"

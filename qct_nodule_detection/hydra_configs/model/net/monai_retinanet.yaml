@@ -1,0 +1,55 @@
+model_cfg:
+  spatial_dims: 3
+
+backbone:
+  _target_: monai.networks.nets.resnet.resnet10
+  spatial_dims: ${model.net.model_cfg.spatial_dims}
+  conv1_t_stride: [2, 2, 1]
+  pretrained: False
+  progress: False
+  n_input_channels: 3
+  conv1_t_size: [7, 7, 7]
+
+fpn_params:
+  returned_layers: [1,2,3]
+
+fe:
+  _target_: monai.apps.detection.networks.retinanet_network.resnet_fpn_feature_extractor
+  backbone: ${model.net.backbone}
+  spatial_dims: ${model.net.model_cfg.spatial_dims}
+  pretrained_backbone: False
+  trainable_backbone_layers: null
+  returned_layers: ${model.net.fpn_params.returned_layers}
+
+anchor_params:
+  _target_: voxdet.anchors.AnchorGeneratorBasedonStride
+  strides: [[2, 4, 4], [4, 8, 8], [8, 16, 16], [16, 32, 32]]
+classes: [nodule]
+train_cfg:
+  matcher:
+    name: set_atss_matcher
+    attr:
+      num_candidates: 12
+      center_in_gt: False
+  sampler:
+    name: set_hard_negative_sampler
+    attr:
+      batch_size_per_image: 500
+      positive_fraction: 0.15
+      min_neg: 400
+      pool_size: 40
+  reg_loss:
+    box_loss:
+      _target_: voxdet.bbox_func.reg_loss.RegLoss
+      iou_loss: diou
+      l1_loss: False
+      reduction: mean
+    encode_gt: False
+    decode_pred: True
+  cls_loss: null
+    # cls_loss:
+    #   _target_: monai.losses.FocalLoss
+    #   reduction: mean
+    #   gamma: 2.0
+
+loss_weight: auto

@@ -1,0 +1,37 @@
+_target_: src.models.combined_module.CombinedLitModule
+defaults:
+  - optimizer: sgd
+  - scheduler: one_cycle_lr
+  - criterion/classification: diff_input_loss_fusion
+  - net/slicewise: multitaskold
+activation: 
+  _target_: torch.nn.Softmax
+  dim: 1
+metric: 
+  _target_: src.metrics.combined_diff_input_metrics.CombinedDiffInputMetrics
+  metrics_func:
+    slice_label: 
+      - _target_ : src.metrics.classification.class_metrics.ClassificationMetrics
+        num_classes : 2
+        ignore_index: -100 
+    scan_label: 
+      - _target_ : src.metrics.classification.class_metrics.ClassificationMetrics
+        num_classes : 2
+        ignore_index: -100
+    mask: 
+      - _target_ : src.metrics.segmentation.dice.Dice3D
+        average: none
+          
+  num_classes:
+    slice_label: 2
+    scan_label: 2
+    mask: 2
+
+additional_keys: null
+subgroups_keys: null
+image_key : image
+label_keys : 
+  - slice_label
+  - scan_label
+  - mask
+

@@ -1,0 +1,10 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - data: mnist.yaml # choose datamodule with `test_dataloader()` for evaluation
+  - evaluation: null
+
+task_name: "eval"
+
+

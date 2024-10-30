@@ -1,0 +1,54 @@
+fpn_params:
+  out_channels: 256
+  scales: [2, 1, 0.5, 0.25]
+
+fe : 
+  _target_ : voxdet.networks.vitdet3d.VitDet3dBackbonewithFPN3D
+  backbone_cfg :
+    image_size: [96, 192, 192]
+    patch_size: [4, 8, 8]
+    hidden_size: 96
+    num_channels: 3
+    use_relative_position_embeddings: True
+    window_block_indices: [0,1,2,3]
+    window_size : [4, 4, 4]
+    out_indices :  [4]
+    num_hidden_layers:  4
+    out_features : 
+      - stage4
+    stage_names : 
+      - stem
+      - stage1
+      - stage2
+      - stage3
+      - stage4
+    out_channels: ${model.net.fpn_params.out_channels}
+    scales: ${model.net.fpn_params.scales}
+anchor_params:
+  _target_: voxdet.anchors.AnchorGeneratorBasedonStride
+  strides: [[2, 4, 4], [4, 8, 8], [8, 16, 16], [16, 32, 32]]
+classes: [nodule]
+train_cfg:
+  matcher:
+    name: set_atss_matcher
+    attr:
+      num_candidates: 12
+      center_in_gt: False
+  sampler:
+    name: set_hard_negative_sampler
+    attr:
+      batch_size_per_image: 500
+      positive_fraction: 0.15
+      min_neg: 400
+      pool_size: 40
+  reg_loss:
+    box_loss:
+      _target_: voxdet.bbox_func.reg_loss.RegLoss
+      iou_loss: diou
+      l1_loss: False
+      reduction: mean
+    encode_gt: False
+    decode_pred: True
+  cls_loss: null
+
+loss_weight: auto

@@ -1,0 +1,8 @@
+# @package model.net 
+_target_: src.common.nn_modules.nets.segmentation.multitaskfusion.MultiTaskFusionNet
+encoder_name: resnet18
+architecture: Unet
+num_classes: 2
+encoder_depth: 5
+encoder_weights: imagenet
+decoder_attention_type: gated_sse

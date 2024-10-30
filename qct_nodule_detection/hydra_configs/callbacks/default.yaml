@@ -1,0 +1,35 @@
+defaults:
+  - map_checkpoint
+  - mar_checkpoint
+  # - early_stopping
+  - learning_rate_monitor
+  - stochastic_weight_averaging
+  - model_summary
+  - rich_progress_bar
+  - weighted_loss_ratio
+
+  - _self_ # Load all configs above and then merge the below. position of `_self_` makes the changes to defaults.
+
+map_checkpoint:
+  dirpath: ${paths.output_dir}/checkpoints
+  filename: "epoch_{epoch:03d}"
+  monitor: "val_mAP"
+  mode: "max"
+  save_last: True
+  auto_insert_metric_name: True
+
+mar_checkpoint:
+  dirpath: ${paths.output_dir}/checkpoints
+  filename: "epoch_{epoch:03d}"
+  monitor: "val_mAR"
+  mode: "max"
+  save_last: True
+  auto_insert_metric_name: True
+
+# early_stopping:
+#   monitor: "val/acc"
+#   patience: 100
+#   mode: "max"
+
+model_summary:
+  max_depth: -1

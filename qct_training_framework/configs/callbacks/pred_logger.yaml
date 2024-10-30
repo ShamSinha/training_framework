@@ -1,0 +1,8 @@
+pred_logger:
+  _target_: src.callbacks.image_logger.LogSegResults
+  num_samples: 4
+  epoch_interval: 1
+  log_gt_label: False
+  images_key: images
+  outputs_key: outputs
+  labels_key: labels

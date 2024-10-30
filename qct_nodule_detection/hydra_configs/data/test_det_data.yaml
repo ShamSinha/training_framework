@@ -1,0 +1,29 @@
+dataloader: 
+  _target_ : voxdet.safe_ds.SafeTensorTestDL
+  ts : 
+    ds_paths : /cache/shubham/lidc_cache/
+    individual_lung : False
+    include :  
+      - /home/users/shubham.kumar/projects/qct_nodule_detection/studies/only_lidc/folds3/folds_4.csv
+    transform :
+      - _target_: voxdet.tfsm.voxt.Norm3d
+        a_min: -1024.0
+        a_max: 300.0
+        b_min: 0.0
+        b_max: 1.0
+        clip: True
+        renorm: True # need to renorm if using RandomErase tfsm
+      - _target_: voxdet.tfsm.voxt.PadIfNeeded
+        sd: 32
+      - _target_: voxdet.tfsm.mip.MIP
+        num_slices: 5
+        stride: 1
+        mode: max
+        return_stacked_img: True
+        mip_channel: [0]
+    dl : 
+      batch_size: 1
+      num_workers: 2
+      shuffle: False
+      drop_last: True
+      pin_memory: True

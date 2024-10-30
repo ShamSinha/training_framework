@@ -1,0 +1,34 @@
+dataloader: 
+  _target_ : voxdet.safe_ds.SafeTensorTestDL
+  ts : 
+    ds_paths : 
+      - /cache/fast_data_nas8/qct/shubham/cache_3d/nlst/
+    individual_lung : 
+      - False
+    include :  
+      - /home/users/shubham.kumar/projects/det_data/nlst_test.csv
+    transform :
+      - _target_: voxdet.tfsm.voxt.ApplyWindowsChannelWise
+        renorm: True # need to renorm if using RandomErase tfsm
+        windows : 
+          - _target_ : qct_utils.cv_ops.windowing.Window
+            ww: 2000
+            wl: -700
+          - _target_ : qct_utils.cv_ops.windowing.Window
+            ww : 1000
+            wl: -400
+      - _target_: voxdet.tfsm.voxt.ToNumpy
+      - _target_: voxdet.tfsm.voxt.PadIfNeeded
+        sd: 32
+      - _target_: voxdet.tfsm.mip.MIP
+        num_slices: 5
+        stride: 1
+        mode: max
+        return_stacked_img: True
+        mip_channel: [0]
+    dl : 
+      batch_size: 1
+      num_workers: 2
+      shuffle: False
+      drop_last: True
+      pin_memory: True

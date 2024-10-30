@@ -1,0 +1,120 @@
+# @package _global_
+
+# to execute this experiment run:
+# python src/train.py experiment=lung_lobe_segmentation
+
+train: True # if true train the model
+test: True # if true test the model
+# if ckpt_path is not none and train is true: load the initial weight from the ckpt_path
+# if ckpt_path is not none and train is false: test the model mentioned in ckpt_path
+skip_clearml: False # in case it's a test experiment
+# ckpt_path: /data_nas5/qer/shubham/mae3d_checkpoints/fpr_mae/runs/2023-11-08_20-58-40/checkpoints/epoch=62_step=16254_val_loss=0.71.ckpt
+# ckpt_path : /data_nas5/qer/shubham/mae3d_checkpoints/fpr_mae/runs/2023-11-14_11-44-42/checkpoints/epoch=219_step=115500_val_loss=0.65.ckpt
+# ckpt_path: /data_nas5/qer/shubham/mae3d_clf/fpr_mae3d_clf/runs/2023-12-19_08-46-36/checkpoints/epoch=140_step=3243_val_loss=0.09.ckpt
+# ckpt_path: /data_nas5/qer/shubham/mae3d_clf/fpr_mae3d_clf/runs/2023-12-21_12-41-52/checkpoints/last.ckpt  #fpr_mae3d_clf_v4 
+# ckpt_path: /data_nas5/qer/shubham/mae3d_clf/fpr_mae3d_clf/runs/2023-12-21_13-14-08/checkpoints/last.ckpt  #fpr_mae3d_clf_v5 
+# ckpt_path: /data_nas5/qer/shubham/mae3d_clf/fpr_mae3d_clf/runs/2023-12-21_13-14-08/checkpoints/epoch=11_step=2664_val_loss=0.09.ckpt
+ckpt_path: /data_nas5/qer/shubham/mae3d_clf/fpr_mae3d_clf/runs/2023-12-21_13-14-08/checkpoints/last.ckpt
+defaults:
+  - override /datamodule: fpr_sl_mae_datamodule.yaml # Ignore everything mentioned in default train.yaml. Load none dict from /datamodule
+  - override /model: mae3d_classification
+   # Load the /model/nodule_segmentation.yaml config group
+  # - override /model/net/classification: qnet # Update the above loaded with new config group. /model/net =  /model/net/resunet. This can be changed from commandline too /model/net=attn_unet
+  - _self_ # After loading the above merge with below
+  # Alternatively instead of writing everything here. we can write yaml files within trainer or callbacks or
+  # - override /trainer: nodule_segmentation.yaml
+  # - override /paths: nodule_segmentation.yaml
+
+# all parameters below will be merged with parameters from default configurations set above or mentioned in train.yaml
+# this allows you to overwrite only specified parameters
+
+task_name: fpr_mae3d_clf # Everything is stored under ${paths.log_dir}/{$task_name}/runs
+
+# Clearml project is created with ${clearml_project} and ${clearml_task_name} is the name present in experiments.qure.ai
+clearml_project: ${task_name}
+# clearml_task_name: ich_slc_scan_clf_sdh_0.4_aug_v3 # Keeping it mandatory for storing names
+clearml_task_name: fpr_mae3d_clf_v5_new
+# tags to help you identify your experiments
+# you can overwrite this in experiment configs
+# overwrite from command line with `python train.py tags="[first_tag, second_tag]"`
+# appending lists from command line is currently not supported :(
+# https://github.com/facebookresearch/hydra/issues/1547
+# tags: ["dev"]
+tags: ["test"]
+
+seed: 12345
+
+## Data Module
+# datamodule:
+# Add any key you want to overwrite.
+
+## Lightning trainer
+trainer: # Merge with default trainer mentioned above
+  default_root_dir: ${paths.output_dir}
+  accelerator: gpu
+  devices: [0]
+  max_epochs: 300
+  gradient_clip_val: 0.5
+  gradient_clip_algorithm: norm
+  accumulate_grad_batches: 16
+  precision: 16-mixed
+  num_sanity_val_steps: 0
+  sync_batchnorm: True
+  # strategy: ddp
+  # profiler: simple
+  # strategy: ddp_find_unused_parameters_true
+
+## Lighning callbacks
+callbacks: # Merged with defaults mentioned in callbacks/default.yaml
+  model_checkpoint: # This is the name of the metric. It is used to save the checkpoint
+    dirpath: ${paths.output_dir}/checkpoints
+    filename: "{epoch}_{step}_{val_loss:.2f}"
+    monitor: "val_loss" # using val/dice has some weird behaviour while saving checkpoint. It is stored as dir val/dice
+    mode: "min"
+    save_last: True
+    auto_insert_metric_name: True
+    save_top_k: 2
+    verbose: true
+    
+  pred_logger:
+    num_samples: 4
+    epoch_interval: 1
+    log_gt_label: False
+
+  # SegSubAnalysis:
+  #   subgroups_keys: [z_spacing, volume, Texture, Calcification, Spiculation]
+
+  early_stopping:
+    monitor: "val_loss"
+    patience: 30
+    mode: "min"
+
+  model_summary:
+    max_depth: 3
+
+  stochastic_weight_averaging:
+    swa_epoch_start: 0.67 # Make this 1 to turn this off.
+    swa_lrs: 0.05
+    annealing_epochs: 20
+
+## Defining paths
+paths:
+  # path to root directory
+  # this requires PROJECT_ROOT environment variable to exist
+  # PROJECT_ROOT is inferred and set by pyrootutils package in `train.py` and `eval.py`
+  root_dir: ${oc.env:PROJECT_ROOT}
+
+  # path to data directory, No data directory is being used.
+  data_dir: null
+
+  # path to logging directory
+  log_dir: /data_nas5/qer/shubham/mae3d_clf/
+
+  # path to output directory, created dynamically by hydra
+  # path generation pattern is specified in `configs/hydra/default.yaml`
+  # use it to store all files generated during the run, like ckpts and metrics
+  # defaults to this log_dir/task_name
+  output_dir: ${hydra:runtime.output_dir}
+
+  # path to working directory
+  work_dir: ${hydra:runtime.cwd}

@@ -1,0 +1,110 @@
+# @package _global_
+
+# defaults:
+#   - override /data: test_det_data_window.yaml 
+#   - _self_
+
+
+task_name: "eval"
+
+# passing checkpoint path is necessary for evaluation
+model: 
+  _target_: voxdet.infer.RetinaInfer
+  device: cuda:3
+  checkpoint_path: 
+  inf_safe: True
+
+conf_thr: [0.9]
+iou_thr: [0.1, 0.2, 0.3, 0.4, 0.5]
+froc_thresholds:
+  _target_: numpy.linspace
+  start: 0.0625
+  stop: 8
+  num: 300
+
+complete_lung_transform: 
+  _target_: torchvision.transforms.Compose
+  transforms: 
+    - _target_: voxdet.tfsm.standard.StandardT
+      src_mode: yxzhwd
+      img_src_mode: zyx
+    - _target_: voxdet.tfsm.med.AddLungCache
+      cache_dir: /cache/fast_data_nas8/qct/shubham/lung_mask_cache_det/nlst/
+      device: cuda:1
+    - _target_: voxdet.tfsm.med.CropLung
+      margin: [2, 5, 5]
+      device: cuda:1
+
+left_lung_transform : 
+  _target_: torchvision.transforms.Compose
+  transforms: 
+    - _target_: voxdet.tfsm.standard.StandardT
+      src_mode: yxzhwd
+      img_src_mode: zyx
+    - _target_: voxdet.tfsm.med.AddLungCache
+      cache_dir: /cache/fast_data_nas8/qct/shubham/lung_mask_cache_det/nlst/
+      device: cuda:1
+    - _target_: voxdet.tfsm.med.CropLung
+      margin: [2, 5, 5]
+      device: cuda:1
+      roi : left
+
+right_lung_transform: 
+  _target_: torchvision.transforms.Compose
+  transforms: 
+    - _target_: voxdet.tfsm.standard.StandardT
+      src_mode: yxzhwd
+      img_src_mode: zyx
+    - _target_: voxdet.tfsm.med.AddLungCache
+      cache_dir: /cache/fast_data_nas8/qct/shubham/lung_mask_cache_det/nlst/
+      device: cuda:1
+    - _target_: voxdet.tfsm.med.CropLung
+      margin: [2, 5, 5]
+      device: cuda:1
+      roi : right
+            
+
+with_window_transform : 
+  _target_: torchvision.transforms.Compose
+  transforms: 
+    - _target_: voxdet.tfsm.voxt.ApplyWindowsChannelWise
+      renorm: True # need to renorm if using RandomErase tfsm
+      windows : 
+        - _target_ : qct_utils.cv_ops.windowing.Window
+          ww : 2000
+          wl : -700
+        - _target_ : qct_utils.cv_ops.windowing.Window
+          ww : 350
+          wl : -30
+    - _target_: voxdet.tfsm.voxt.PadIfNeeded
+      sd: 32
+    - _target_: voxdet.tfsm.mip.MIP
+      num_slices: 5
+      stride: 1
+      mode: max
+      return_stacked_img: True
+      mip_channel: [0]
+
+without_window_transform: 
+  _target_: torchvision.transforms.Compose
+  transforms:
+    - _target_: voxdet.tfsm.voxt.Norm3d
+      a_min: -1024.0
+      a_max: 300.0
+      b_min: 0.0
+      b_max: 1.0
+      clip: True
+      renorm: True # need to renorm if using RandomErase tfsm
+    - _target_: voxdet.tfsm.voxt.PadIfNeeded
+      sd: 32
+    - _target_: voxdet.tfsm.mip.MIP
+      num_slices: 5
+      stride: 1
+      mode: max
+      return_stacked_img: True
+
+save_dir: /home/users/shubham.kumar/evaluation/
+datasets: nlst
+filename: whole_lung_window.csv
+
+

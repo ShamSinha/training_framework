@@ -1,0 +1,25 @@
+defaults:
+  - transforms: fpr_mae_transforms
+  - analysis: null
+  - _self_
+_target_: src.datamodules.base_dataloader.MetaClsDataModule
+data_cfg:
+  data_extract_func: videomae_data_loader
+  csvs: 
+  - /home/users/shubham.kumar/projects/qct_training_framework/notebooks/fpr_lidc.csv
+  - /home/users/shubham.kumar/projects/qct_training_framework/notebooks/fpr_lidc_raw.csv
+  - /home/users/shubham.kumar/projects/qct_training_framework/notebooks/fpr_nlst_pm_t0.csv
+  - /home/users/shubham.kumar/projects/qct_training_framework/notebooks/fpr_nlst.csv
+  directorys: 
+  - /cache/fast_data_nas8/qct/shubham/fpr_cache_48_48_16/safetensors_cache/
+  - /cache/fast_data_nas8/qct/shubham/fpr_cache_lidc/
+  - /cache/fast_data_nas8/qct/shubham/fpr_cache_nlst_pm_t0/
+  - /cache/fast_data_nas8/qct/shubham/fpr_cache_nlst/
+  frac : 1
+  oversample_ratios: null
+dataloader_cfg:
+  batch_size: 32
+  num_workers: 16
+  sample: False 
+  
+  sample_fusion: False

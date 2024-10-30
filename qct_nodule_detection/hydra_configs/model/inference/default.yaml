@@ -1,0 +1,15 @@
+infer_cfg:
+  roi_size: [64, 256, 256]
+  sw_batch_size: 2
+  overlap: 0.5
+  mode: constant
+  cval: 0
+  padding_mode: constant
+infer_thr:
+  conf_thr: 0.05
+  nms_thr: 0.1
+test_transforms:
+  - _target_: voxdet.tfsm.standard.StandardT
+    src_mode: yxzhwd
+    img_src_mode: zyx
+  # - _target_: voxdet.tfsm.med.CropLung

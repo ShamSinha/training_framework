@@ -1,0 +1,71 @@
+_target_: src.models.combined_module.CombinedLitModule
+defaults:
+  - optimizer: sgd
+  - scheduler: one_cycle_lr
+  - criterion/classification: diff_input_loss
+  - net/slicewise: resnet
+activation: 
+  _target_: torch.nn.Softmax
+  dim: 1
+metric: 
+  _target_: src.metrics.combined_diff_input_metrics.CombinedDiffInputMetrics
+  metrics_func:
+    slice_label: 
+      - _target_ : src.metrics.classification.class_metrics.ClassificationMetrics
+        num_classes : 2
+        ignore_index: -100
+      # - _target_ : torchmetrics.Accuracy 
+      #   task : binary  
+      #   ignore_index: -100
+      # - _target_ : torchmetrics.Specificity
+      #   task: binary
+      #   ignore_index: -100
+      # - _target_ : torchmetrics.Recall
+      #   task : binary
+      #   ignore_index: -100
+      # - _target_ : torchmetrics.AveragePrecision
+      #   task : binary
+      #   ignore_index: -100     
+    scan_label: 
+      - _target_ : src.metrics.classification.class_metrics.ClassificationMetrics
+        num_classes : 2
+        ignore_index: -100
+      # - _target_ : torchmetrics.Accuracy 
+      #   task : binary  
+      #   ignore_index: -100
+      # - _target_ : torchmetrics.Specificity
+      #   task: binary
+      #   ignore_index: -100
+      # - _target_ : torchmetrics.Recall
+      #   task : binary
+      #   ignore_index: -100
+      # - _target_ : torchmetrics.AveragePrecision
+      #   task : binary
+      #   ignore_index: -100
+          
+  num_classes:
+    slice_label: 2
+    scan_label: 2
+
+additional_keys: null
+subgroups_keys: null
+image_key : image
+label_keys : 
+  - slice_label
+  - scan_label
+
+
+# _target_: src.models.model.LightningModel
+# defaults:
+#   - optimizer: sgd
+#   - scheduler: one_cycle_lr
+#   - net/slicewise: resnet18
+#   - criterion/classification: cross_entropy
+#   - metric/classification: class_metrics.yaml
+  
+# image_key : 'image'
+# label_key : 'ICH'
+
+# num_classes: 2
+
+

@@ -1,0 +1,78 @@
+# Val transforms if test transforms is not mentioned
+# use the val transforms as test transforms
+val_transforms:
+  _target_: monai.transforms.Compose
+  transforms:
+    - _target_: src.common.transforms.monai_extras.LoadHDF5Data
+      keys: ["image"]
+    # - _target_: src.common.transforms.monai_extras.ToTensor
+    #   keys: ["slice_label"]
+    # - _target_: src.common.transforms.monai_extras.FixedZDim
+    #   keys: ["image", "slice_label"]
+    #   target_z: 32
+    #   pad_value: 0
+    #   random_center_crop: False
+    # - _target_ : src.common.transforms.monai_extras.ApplyCrop
+    #   keys: ["image"]
+    #   crop_key: crop
+    # - _target_: src.common.transforms.monai_extras.Resize3D
+    #   image_key : image
+    #   label_keys: ["lung_label" , "lobe_label"]
+    #   spatial_size: [160,224,224]  #resnet unet
+    - _target_ : src.common.transforms.monai_extras.CropHeadCT
+      image_key: image
+    - _target_: src.common.transforms.monai_extras.ResizeImage
+      keys: ["image"]
+      size: [224,224]
+      interpolation: 
+        image: bicubic
+    - _target_: src.common.transforms.monai_extras.ApplyWindowsChannelWise
+      keys: ["image"]
+      windows: ["brain_window","blood_window","bone_window"]
+    - _target_: src.common.transforms.monai_extras.ExpandDim
+      keys: ["image"]
+      
+# train transforms
+train_transforms:
+  _target_: monai.transforms.Compose
+  transforms:
+    - _target_: src.common.transforms.monai_extras.LoadHDF5Data
+      keys: ["image"]
+    - _target_: src.common.transforms.monai_extras.ToTensor
+      keys: ["slice_label"]
+    - _target_: src.common.transforms.monai_extras.FixedZDim
+      keys: ["image", "slice_label"]
+      target_z: 32
+      pad_value: 0
+      random_center_crop: True
+    - _target_: src.common.transforms.monai_extras.RandomNoise
+      keys: ["image"]
+      intensity: 15
+      mode: "hct_thin"
+      prob: 0.5
+    - _target_: src.common.transforms.monai_extras.RandomSmoothSharpen
+      keys: ["image"]
+      intensity: 0.6
+      kernel_size: 5
+      prob: 0.5
+    - _target_ : src.common.transforms.monai_extras.ApplyCrop
+      keys: ["image"]
+      crop_key: crop
+    - _target_: src.common.transforms.monai_extras.ResizeImage
+      size: [224,224]
+      keys: ["image"]
+      interpolation: 
+        image: bicubic
+    - _target_: src.common.transforms.monai_extras.ApplyWindowsChannelWise
+      keys: ["image"]
+      windows: ["brain_window","blood_window","bone_window"]
+    - _target_: src.common.transforms.monai_extras.RandomHorizontalFlip 
+      prob: 0.5
+      keys: ["image"]
+    - _target_: src.common.transforms.monai_extras.RandomAffine
+      prob: 0.5
+      keys: ["image"]
+      scale: [0.7, 1.2]
+      degrees: [-15,15]
+    - _target_: src.common.transforms.monai_extras.ExpandDim
+      keys: ["image"]

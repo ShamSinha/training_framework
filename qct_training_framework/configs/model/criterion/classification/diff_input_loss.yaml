@@ -1,0 +1,43 @@
+# @package model.criterion
+_target_: src.common.nn_modules.losses.combined_loss_diff_input.CombinedLossDiffInput
+losses:
+  slice_label: 
+    _target_: src.common.nn_modules.losses.cross_entropy_loss.CrossEntropyLossFunc
+    ignore_index: -100
+    weights: 
+      _target_: torch.tensor
+      data: [1.0, 5.0]
+
+    # _target_ : segmentation_models_pytorch.losses.FocalLoss
+    # mode : binary
+    # alpha : 0.75
+    # gamma : 0.5
+    # ignore_index: -100
+
+  scan_label :
+    _target_: src.common.nn_modules.losses.cross_entropy_loss.CrossEntropyLossFunc
+    ignore_index: -100
+    weights: 
+      _target_: torch.tensor
+      data: [1.0, 2.0]
+  # mask : 
+  #   _target_: monai.losses.GeneralizedDiceFocalLoss
+  #   to_onehot_y: true
+  #   softmax: true
+  #   include_background: true
+  #   lambda_gdl: 2
+  #   lambda_focal: 5
+  #   focal_weight: [2,4]
+loss_inputs: 
+  slice_label : slice_label
+  scan_label : scan_label
+  # mask: mask
+weights:
+  slice_label : 3
+  scan_label : 2
+  # mask: 2
+activations: 
+  slice_label : 
+    _target_: torch.nn.Identity
+  scan_label : 
+    _target_: torch.nn.Identity

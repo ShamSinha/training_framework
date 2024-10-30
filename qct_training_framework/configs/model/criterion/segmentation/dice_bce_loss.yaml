@@ -1,0 +1,5 @@
+# @package model.criterion
+_target_: src.common.nn_modules.losses.dice_bce_loss.bce_dice
+_partial_: True
+loss_weights: [1, 1]
+to_onehot_y: True

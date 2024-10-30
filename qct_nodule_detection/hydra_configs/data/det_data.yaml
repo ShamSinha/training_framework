@@ -1,0 +1,71 @@
+dataloader: 
+  _target_ : voxdet.safe_ds.SafeTensorDL
+  ts : 
+    ds_paths : /cache/shubham/lidc_cache/
+    individual_lung : False
+    include :  
+      - /home/users/shubham.kumar/projects/qct_nodule_detection/studies/only_lidc/folds1/folds_0.csv
+      - /home/users/shubham.kumar/projects/qct_nodule_detection/studies/only_lidc/folds1/folds_1.csv
+      - /home/users/shubham.kumar/projects/qct_nodule_detection/studies/only_lidc/folds1/folds_2.csv
+      - /home/users/shubham.kumar/projects/qct_nodule_detection/studies/only_lidc/folds1/folds_3.csv
+    transform : 
+      - _target_: voxdet.tfsm.voxt.Norm3d
+        a_min: -1024.0
+        a_max: 300.0
+        b_min: 0.0
+        b_max: 1.0
+        clip: True
+        renorm: True # need to renorm if using RandomErase tfsm
+      - _target_: voxdet.tfsm.voxt.PadIfNeeded
+        sd: 32
+      - _target_: voxdet.tfsm.mip.MIP
+        num_slices: 5
+        stride: 1
+        mode: max
+        return_stacked_img: True
+        mip_channel: [0]
+      - _target_: voxdet.tfsm.voxt.RandPosCrop
+        crop_size: [96, 192, 192]
+      - _target_: voxdet.tfsm.erase.RandomErase
+        patch_size: [8, 16, 16]
+        use_bbox: True
+        mask_perc: 0.1 # %age of patches selected from the nodule crop
+        mask_filler: zeros
+        p: 0.2 # prob of applying tfsm
+      - _target_: voxdet.tfsm.flip.RandFlip
+        axis: [1, 2] # (axis_dim, axis): (0, depth), (1, horizontal), (2, vertical); list of axes determines order in which flip tfsms are applied
+        p: [0.2, 0.2] # prob of applying respective flip tfsms
+    dl : 
+      batch_size: 12
+      num_workers: 4
+      shuffle: True
+      drop_last: True
+      pin_memory: True
+  vs : 
+    ds_paths : /cache/shubham/lidc_cache/
+    individual_lung : False
+    include :  
+      - /home/users/shubham.kumar/projects/qct_nodule_detection/studies/only_lidc/folds1/folds_4.csv
+      # - /home/users/shubham.kumar/projects/qct_nodule_detection/studies/only_lidc/folds1/dummy.csv
+    transform :
+      - _target_: voxdet.tfsm.voxt.Norm3d
+        a_min: -1024.0
+        a_max: 300.0
+        b_min: 0.0
+        b_max: 1.0
+        clip: True
+        renorm: True # need to renorm if using RandomErase tfsm
+      - _target_: voxdet.tfsm.voxt.PadIfNeeded
+        sd: 32
+      - _target_: voxdet.tfsm.mip.MIP
+        num_slices: 5
+        stride: 1
+        mode: max
+        return_stacked_img: True
+        mip_channel: [0]
+    dl : 
+      batch_size: 1
+      num_workers: 2
+      shuffle: False
+      drop_last: True
+      pin_memory: True

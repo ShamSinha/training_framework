@@ -1,0 +1,12 @@
+# @package model.criterion
+_target_: src.common.nn_modules.losses.spatial_weighted_loss.SpatialWeightedLoss
+weights : [3]
+roi_mask_keys : [icv_mask]
+loss : 
+  _target_: monai.losses.GeneralizedDiceFocalLoss
+  to_onehot_y: true
+  softmax: true
+  include_background: true
+  lambda_gdl: 2
+  lambda_focal: 4
+  focal_weight: [1,3]

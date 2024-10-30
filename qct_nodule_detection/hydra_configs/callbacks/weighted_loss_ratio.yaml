@@ -1,0 +1,4 @@
+weighted_loss_ratio:
+  _target_: voxdet.callbacks.WeightedLossCallback
+  window_size : 100
+  loss_type: auto

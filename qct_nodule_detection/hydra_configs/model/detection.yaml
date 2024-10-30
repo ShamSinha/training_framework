@@ -1,0 +1,14 @@
+_target_: voxdet.trainer.DetTrainer
+defaults:
+  - optimizer: sgd
+  - scheduler: one_cycle_lr
+  - net: monai_retinanet
+  - inference: default
+
+
+
+
+
+
+
+

@@ -1,0 +1,51 @@
+model_cfg: 
+  spatial_dims: 3
+
+backbone: 
+  _target_: voxdet.res_se_net.resnet10
+  ic: 1
+  c1_ks: [7, 7, 7]
+  c1_stride: [1, 2, 2]
+  base_pool: True
+
+fpn_params:
+  out_channels: 256
+  returned_layers: [1, 2, 3]
+  extra_blocks: False
+
+fe:
+  _target_: voxdet.fpn.resnet_fpn3d_feature_extractor
+  backbone: ${backbone}
+  out_channels:  ${fpn_params.out_channels}
+  returned_layers: ${fpn_params.returned_layers}
+  extra_blocks: ${fpn_params.extra_blocks}
+  
+
+anchor_params:
+  _target_: voxdet.anchors.AnchorGeneratorBasedonStride
+  strides: [[2, 4, 4], [4, 8, 8], [8, 16, 16]]
+classes: [nodule]
+train_cfg:
+  matcher:
+    name: set_atss_matcher
+    attr:
+      num_candidates: 12
+      center_in_gt: False
+  sampler:
+    name: set_hard_negative_sampler
+    attr:
+      batch_size_per_image: 500
+      positive_fraction: 0.15
+      min_neg: 400
+      pool_size: 40
+  reg_loss:
+    box_loss:
+      _target_: voxdet.bbox_func.reg_loss.RegLoss
+      iou_loss: diou
+      l1_loss: False
+      reduction: mean
+    encode_gt: False
+    decode_pred: True
+  cls_loss: null
+
+loss_weight: auto

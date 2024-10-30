@@ -1,0 +1,16 @@
+_target_: src.models.nodule_seg_module.NoduleSegLitModule
+defaults:
+  - optimizer: sgd
+  - scheduler: one_cycle_lr
+  - net/segmentation: unet_3plus
+  - criterion/segmentation: dice_focal_loss
+# In the List[Dict] returned by the data extraction function. What is the key name which have the image batch
+image_key: image
+# In the List[Dict] returned by the data extraction function. What is the key name which have the label (GT mask) batch
+label_key: label
+# In the List[Dict] returned by the data extraction function. What additional data we need to send to the model.
+# Note that we need to have the same key name(`roi_mask`) in the dict from the extraction function and the
+# parameter name in the model.
+additional_keys:
+  - roi_mask
+subgroups_keys: [z_spacing, volume, Texture, Spiculation, Calcification]
