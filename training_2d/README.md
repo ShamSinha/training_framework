@@ -1,4 +1,4 @@
-QXR Training Repo
+XR Training Repo
 ===
 
 ## To know how to Config is structured , please.. read this
@@ -23,9 +23,9 @@ https://github.com/isaaccorley/torchseg/issues/54
   conda create -n qtrain python=3.10
   eval "$(conda shell.bash hook)"
   conda activate qtrain
-  if [ -d "/home/users/$USER/qxr_training" ]; then
-      # If it exists, change to the 'qxr_training' directory
-      cd /home/users/$USER/qxr_training
+  if [ -d "/home/users/$USER/xr_training" ]; then
+      # If it exists, change to the 'xr_training' directory
+      cd /home/users/$USER/xr_training
   fi
   pip install -e .
   ```
@@ -123,10 +123,10 @@ scheduler = {
 ## Resources
 
 To understand and how the model loading and debugging and the how the configs are arranged , u can go through this notebook.
-[Model_debugging](https://github.com/qureai/qxr_training/blob/master/notebooks/model_debugging.ipynb)
+[Model_debugging](https://github.com/qureai/xr_training/blob/master/notebooks/model_debugging.ipynb)
 
 To understand and how to load the model during inference and understand its gradcam , u can go through this notebook.
-[Model_inference_gradcam.](https://github.com/qureai/qxr_training/blob/master/notebooks/model_inference_gradcam.ipynb)
+[Model_inference_gradcam.](https://github.com/qureai/xr_training/blob/master/notebooks/model_inference_gradcam.ipynb)
 
 ## Points to Note
 
