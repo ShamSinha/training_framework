@@ -128,6 +128,4 @@ To understand and how the model loading and debugging and the how the configs ar
 To understand and how to load the model during inference and understand its gradcam , u can go through this notebook.
 [Model_inference_gradcam.](https://github.com/qureai/xr_training/blob/master/notebooks/model_inference_gradcam.ipynb)
 
-## Points to Note
 
-Any changes or improvments to the code are welcome and do note that any changes made have to be backward compatible and also after the changes are done it should also work with the [qxr_model repo](https://github.com/qureai/cxr_models) , this is the repo that produces the torchscript files that would be used during production , so if u are able to make changes here that break the model convertion to torchscript, you should be ready to also make sure to work on making the models ready during production too.If u are fine with them , do send a pull request.
