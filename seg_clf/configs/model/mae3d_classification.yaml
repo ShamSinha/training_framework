@@ -1,0 +1,22 @@
+_target_: src.models.combined_module.CombinedLitModule
+defaults:
+  - optimizer: sgd
+  - scheduler: one_cycle_lr
+  - net/classification: mae3d
+activation: 
+  _target_: torch.nn.Softmax
+  dim: 1
+metric: 
+  _target_ : src.metrics.classification.class_metrics.ClassificationMetrics
+  num_classes : 2
+  ignore_index: -100
+criterion: 
+  _target_: src.common.nn_modules.losses.cross_entropy_loss.CrossEntropyLossFunc
+  ignore_index: -100
+  weights: 
+    _target_: torch.tensor
+    data: [1.0, 3.0]        
+additional_keys: null
+subgroups_keys: null
+image_key : image
+label_keys : label

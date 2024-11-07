@@ -1,0 +1,50 @@
+_target_: src.models.combined_module.CombinedLitModule
+defaults:
+  - optimizer: sgd
+  - scheduler: one_cycle_lr
+  - net/segmentation: timm_models
+  - criterion/segmentation: diff_input_loss
+activation: 
+  _target_: torch.nn.Softmax
+  dim: 1
+metric: 
+  _target_: src.metrics.combined_diff_input_metrics.CombinedDiffInputMetrics
+  metrics_func:
+    lobe_label: 
+      - _target_ : src.metrics.segmentation.dice.Dice3D
+        num_classes: 6
+        average: none
+    lung_label: 
+      - _target_ : src.metrics.segmentation.dice.Dice3D
+        num_classes: 3
+        average: none
+  num_classes:
+    lobe_label: 6
+    lung_label: 3
+  kwargs : 
+    dice : True  
+
+# In the List[Dict] returned by the data extraction function. What is the key name which have the image batch
+image_key: image
+# In the List[Dict] returned by the data extraction function. What is the key name which have the label (GT mask) batch
+label_keys: 
+  - lobe_label
+  - lung_label
+class_names : 
+  lobe_label : 
+    - 'Background'
+    - 'Left Upper Lobe'
+    - 'Left Lower Lobe'
+    - 'Right Upper Lobe'
+    - 'Right Middle Lobe'
+    - 'Right Lower Lobe'
+  lung_label : 
+    - 'Background'
+    - 'Right Lung'
+    - 'Left Lung'
+    
+# In the List[Dict] returned by the data extraction function. What additional data we need to send to the model.
+# Note that we need to have the same key name(`roi_mask`) in the dict from the extraction function and the
+# parameter name in the model.
+additional_keys: null
+subgroups_keys: null

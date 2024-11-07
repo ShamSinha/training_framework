@@ -1,0 +1,40 @@
+defaults:
+  - transforms: segm_transforms
+  - analysis: lung_nodules
+  - _self_
+
+_target_: src.datamodules.base_dataloader.MetaClsDataModule
+data_cfg:
+  train:
+    - data_extract_func: lung_nodule_cache_data_extractor
+      srcs_key: src
+      data_srcs: ["lidc"]
+      meta_cfg: ${....analysis}
+      csvs:
+        - /home/users/souvik.mandal/datasets/segm_cache/deha_net_cache/train_0/lidc_train_0.csv
+        - /home/users/souvik.mandal/datasets/segm_cache/deha_net_cache/train_1/lidc_train_1.csv
+        - /home/users/souvik.mandal/datasets/segm_cache/deha_net_cache/train_2/lidc_train_2.csv
+        - /home/users/souvik.mandal/datasets/segm_cache/deha_net_cache/train_3/lidc_train_3.csv
+  val:
+    - data_extract_func: lung_nodule_cache_data_extractor
+      srcs_key: src
+      data_srcs: ["lidc"]
+      meta_cfg: ${....analysis}
+      csvs:
+        - /home/users/souvik.mandal/datasets/segm_cache/deha_net_cache/train_4/lidc_train_4.csv
+  test:
+    - data_extract_func: lung_nodule_cache_data_extractor
+      srcs_key: src
+      data_srcs: ["lidc"]
+      meta_cfg: ${....analysis}
+      csvs:
+        - /home/users/souvik.mandal/datasets/segm_cache/deha_net_cache/test/lidc_test.csv
+  oversample_ratios: # repeats the dataset
+    0: 1
+    1: 2
+    2: 2
+    -1: 1
+  label_key: Texture
+dataloader_cfg:
+  batch_size: 4
+  num_workers: 16

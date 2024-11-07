@@ -1,0 +1,19 @@
+_target_: src.models.mae3d_module.MAE3DModule
+model : 
+  _target_: src.common.nn_modules.nets.mae.mae3d.MAE3D
+  pos_embed_type: 'sincos'
+  mask_ratio: 0.7
+  input_size: [48,48,16]
+  patch_size: [6,6,4]
+  in_chans: 1
+  encoder_embed_dim: 576
+  encoder_depth: 4
+  encoder_num_heads: 12
+  decoder_embed_dim: 252
+  decoder_depth: 3
+  decoder_num_heads: 12
+  encoder_drop_rate: 0.1
+  attn_drop_rate: 0.1
+defaults:
+  - optimizer: sgd
+  - scheduler: one_cycle_lr

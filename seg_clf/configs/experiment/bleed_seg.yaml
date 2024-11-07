@@ -1,0 +1,133 @@
+# @package _global_
+
+# to execute this experiment run:
+# python src/train.py experiment=lung_lobe_segmentation
+
+train: True # if true train the model
+test: True # if true test the model
+# if ckpt_path is not none and train is true: load the initial weight from the ckpt_path
+# if ckpt_path is not none and train is false: test the model mentioned in ckpt_path
+skip_clearml: False # in case it's a test experiment
+
+## knowledge distillation
+# ckpt_path: /data_nas5/qer/shubham/ich_checkpoints/ich_segmentation/runs/2023-09-23_18-41-29/checkpoints/epoch=17_step=432_val_loss=62.74.ckpt
+# ckpt_path: /data_nas5/qer/shubham/ich_checkpoints/ich_segmentation/runs/2023-09-23_20-20-59/checkpoints/epoch=155_step=3744_val_loss=8.24.ckpt
+# ckpt_path: /data_nas5/qer/shubham/ich_checkpoints/ich_segmentation/runs/2023-09-25_18-50-58/checkpoints/epoch=188_step=4536_val_loss=11.15.ckpt
+# ckpt_path : /data_nas5/qer/shubham/ich_checkpoints/ich_segmentation/runs/2023-09-25_23-46-37/checkpoints/epoch=194_step=4680_val_loss=0.42.ckpt #v17
+# ckpt_path : /data_nas5/qer/shubham/ich_checkpoints/ich_segmentation/runs/2023-09-26_23-07-16/checkpoints/epoch=214_step=5160_val_loss=5.25.ckpt  #v21
+# ckpt_path: /data_nas5/qer/shubham/ich_checkpoints/ich_segmentation/runs/2023-09-27_11-34-11/checkpoints/epoch=218_step=5256_val_loss=0.78.ckpt #v22
+ckpt_path: /data_nas5/qer/shubham/ich_checkpoints/ich_segmentation/runs/2023-09-27_14-06-10/checkpoints/epoch=226_step=5448_val_loss=10.60.ckpt #v23
+
+
+defaults:
+  - override /datamodule: bleed_seg_datamodule.yaml # Ignore everything mentioned in default train.yaml. Load none dict from /datamodule
+  - override /model: bleed_seg
+   # Load the /model/nodule_segmentation.yaml config group
+  # - override /model/net/classification: qnet # Update the above loaded with new config group. /model/net =  /model/net/resunet. This can be changed from commandline too /model/net=attn_unet
+  - _self_ # After loading the above merge with below
+  # Alternatively instead of writing everything here. we can write yaml files within trainer or callbacks or
+  # - override /trainer: nodule_segmentation.yaml
+  # - override /paths: nodule_segmentation.yaml
+
+# all parameters below will be merged with parameters from default configurations set above or mentioned in train.yaml
+# this allows you to overwrite only specified parameters
+
+task_name: ich_segmentation # Everything is stored under ${paths.log_dir}/{$task_name}/runs
+
+# Clearml project is created with ${clearml_project} and ${clearml_task_name} is the name present in experiments.qure.ai
+clearml_project: ${task_name}
+# clearml_task_name: ich_slc_scan_clf_sdh_0.4_aug_v3 # Keeping it mandatory for storing names
+clearml_task_name: ich_seg_v28_external_kaggle_dataset
+# tags to help you identify your experiments
+# you can overwrite this in experiment configs
+# overwrite from command line with `python train.py tags="[first_tag, second_tag]"`
+# appending lists from command line is currently not supported :(
+# https://github.com/facebookresearch/hydra/issues/1547
+# tags: ["dev"]
+tags: ["test"]
+
+seed: 12345
+
+## Data Module
+# datamodule:
+# Add any key you want to overwrite.
+
+## Lightning trainer
+trainer: # Merge with default trainer mentioned above
+  default_root_dir: ${paths.output_dir}
+  accelerator: gpu
+  devices: [0,1,2]
+  max_epochs: 300
+  gradient_clip_val: 0.5
+  gradient_clip_algorithm: norm
+  accumulate_grad_batches: 16
+  precision: 16-mixed
+  num_sanity_val_steps: 0
+  sync_batchnorm: True
+  strategy: ddp
+  # profiler: simple
+  # strategy: ddp_find_unused_parameters_true
+
+## Lighning callbacks
+callbacks: # Merged with defaults mentioned in callbacks/default.yaml
+  model_checkpoint: # This is the name of the metric. It is used to save the checkpoint
+    dirpath: ${paths.output_dir}/checkpoints
+    filename: "{epoch}_{step}_{val_loss:.2f}"
+    monitor: "val_loss" # using val/dice has some weird behaviour while saving checkpoint. It is stored as dir val/dice
+    mode: "min"
+    save_last: True
+    auto_insert_metric_name: True
+    save_top_k: 2
+    verbose: true
+  # val_lobe_label: # This is the name of the metric. It is used to save the checkpoint
+  #   dirpath: ${paths.output_dir}/checkpoints
+  #   filename: "{epoch}_{step}_{val_lobe_label:.2f}"
+  #   monitor: "val_lobe_label" # using val/dice has some weird behaviour while saving checkpoint. It is stored as dir val/dice
+  #   mode: "max"
+  #   save_last: True
+  #   auto_insert_metric_name: True
+  #   save_top_k: 2
+  #   verbose: true
+    
+  pred_logger:
+    num_samples: 4
+    epoch_interval: 1
+    log_gt_label: False
+
+  # SegSubAnalysis:
+  #   subgroups_keys: [z_spacing, volume, Texture, Calcification, Spiculation]
+
+  early_stopping:
+    monitor: "val_loss"
+    patience: 30
+    mode: "min"
+
+  model_summary:
+    max_depth: 3
+
+  stochastic_weight_averaging:
+    swa_epoch_start: 0.67 # Make this 1 to turn this off.
+    swa_lrs: 0.05
+    annealing_epochs: 20
+
+## Defining paths
+paths:
+  # path to root directory
+  # this requires PROJECT_ROOT environment variable to exist
+  # PROJECT_ROOT is inferred and set by pyrootutils package in `train.py` and `eval.py`
+  root_dir: ${oc.env:PROJECT_ROOT}
+
+  # path to data directory, No data directory is being used.
+  data_dir: null
+
+  # path to logging directory
+  log_dir: /data_nas5/qer/shubham/ich_checkpoints/
+
+  # path to output directory, created dynamically by hydra
+  # path generation pattern is specified in `configs/hydra/default.yaml`
+  # use it to store all files generated during the run, like ckpts and metrics
+  # defaults to this log_dir/task_name
+  output_dir: ${hydra:runtime.output_dir}
+
+  # path to working directory
+  work_dir: ${hydra:runtime.cwd}

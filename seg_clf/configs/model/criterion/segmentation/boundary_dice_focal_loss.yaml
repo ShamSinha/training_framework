@@ -1,0 +1,11 @@
+# @package model.criterion
+_target_: src.common.nn_modules.losses.boundary_dice_focal_loss.BoundaryDiceFocalLoss
+factor_voxels_inside_boundary: 1.0
+factor_voxels_on_boundary: 1.0
+factor_voxels_outside_boundary: 0.0
+kwargs:
+  lambda_dice: 1.0
+  lambda_focal: 1.0
+  include_background: true
+  to_onehot_y: true
+  softmax: true
