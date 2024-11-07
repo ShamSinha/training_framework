@@ -1,4 +1,0 @@
--r requirements.txt
--r requirements_jenkins.txt
--r requirements_qure.txt
--r requirements_research.txt

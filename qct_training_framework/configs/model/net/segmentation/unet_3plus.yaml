@@ -1,8 +1,0 @@
-# @package model.net
-# Not all args are written here.
-_target_: src.common.nn_modules.nets.unet_3p.Unet3p
-spatial_dims: 3
-in_channels: 1
-out_channels: 2
-dropout: 0.1
-skip_out_channels: 16

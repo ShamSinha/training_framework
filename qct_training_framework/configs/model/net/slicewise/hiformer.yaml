@@ -1,3 +1,0 @@
-# @package model.net 
-_target_: src.common.nn_modules.nets.slicewise.hiformer.SliceWiseHf
-

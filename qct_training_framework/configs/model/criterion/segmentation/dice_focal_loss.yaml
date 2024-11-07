@@ -1,7 +1,0 @@
-# @package model.criterion
-_target_: monai.losses.DiceFocalLoss
-to_onehot_y: true
-softmax: true
-include_background: true
-lambda_dice: 3.0 
-lambda_focal: 4.0

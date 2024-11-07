@@ -1,5 +1,0 @@
-# @package model.criterion
-_target_: kornia.losses.FocalLoss
-alpha: 0.2
-gamma: 2.0
-reduction: mean

@@ -1,5 +1,0 @@
-# @package model.net 
-_target_: src.common.nn_modules.nets.slicewise.multitaskold.MultiTaskFusionNet
-decoder_attention_type: scse
-cls_pooling: avg
-cls_dropout: 0.4

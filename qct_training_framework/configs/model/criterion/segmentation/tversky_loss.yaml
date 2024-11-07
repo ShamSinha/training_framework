@@ -1,6 +1,0 @@
-# @package model.criterion
-_target_: monai.losses.TverskyLoss
-to_onehot_y: true
-softmax: true
-alpha: 0.3 # 0.3 FP
-beta: 0.7 # 0.7 FN

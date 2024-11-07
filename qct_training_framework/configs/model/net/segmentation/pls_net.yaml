@@ -1,5 +1,0 @@
-_target_: src.common.nn_modules.nets.segmentation.pls_net.PLS
-nb_classes: 6
-nb_channels: [0, 16, 64, 128]
-growth_rate: 12
-

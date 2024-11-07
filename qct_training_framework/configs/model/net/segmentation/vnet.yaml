@@ -1,9 +1,0 @@
-# @package model.net
-_target_: src.common.nn_modules.nets.segmentation.vnet.VNet
-spatial_dims: 3
-in_channels: 4
-out_channels: [6, 3]
-label_keys: [lobe_label, lung_label]
-dropout_prob: 0.5
-dropout_dim: 3
-bias: False

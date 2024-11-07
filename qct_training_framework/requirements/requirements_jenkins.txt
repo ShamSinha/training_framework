@@ -1,9 +1,0 @@
-black
-isort
-pre-commit
-flake8
-ipython
-ipywidgets
-pytest
-setuptools
-twine

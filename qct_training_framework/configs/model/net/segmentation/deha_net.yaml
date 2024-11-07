@@ -1,8 +1,0 @@
-# @package model.net
-_target_: src.common.nn_modules.nets.segmentation.deha_net.DEHANET
-num_classes: 2
-n_blocks: 4
-in_chans: 1
-encoder_backbone: resnet10t
-segtype: unet
-drop_rate: 0.05

@@ -1,9 +1,0 @@
-# @package model.net
-_target_: src.common.nn_modules.nets.classifiers.monai_with_attn.MonaiModelWithAttn
-model_arch: DenseNet121
-in_channels: 3
-use_mask: False
-model_args:
-  dropout_prob: 0.05
-  spatial_dims: 3
-  out_channels: 2

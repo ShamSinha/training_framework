@@ -1,4 +1,0 @@
-_target_: torch.optim.lr_scheduler.OneCycleLR
-_partial_: true
-max_lr: 0.5
-epochs: ${trainer.max_epochs}

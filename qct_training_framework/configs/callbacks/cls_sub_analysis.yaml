@@ -1,6 +1,0 @@
-ClsSubAnalysis:
-  _target_: src.callbacks.cls_subg_analysis.ClsSubAnalysis
-  subgroups_keys: [z_spacing, volume]
-  outputs_key: outputs
-  labels_key: inputs
-  num_classes: 3

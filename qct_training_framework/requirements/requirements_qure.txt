@@ -1,2 +1,0 @@
-qure_adhoc
-qct_utils>=2.0.2

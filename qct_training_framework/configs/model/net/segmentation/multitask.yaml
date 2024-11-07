@@ -1,4 +1,0 @@
-_target_: src.common.nn_modules.nets.segmentation.multitask.MultiTaskNet
-decoder_attention_type: gated_sse
-cls_pooling: avg
-cls_dropout: 0.2

@@ -1,5 +1,0 @@
-SegSubAnalysis:
-  _target_: src.callbacks.seg_subg_analysis.SegSubAnalysis
-  subgroups_keys: [z_spacing, volume]
-  outputs_key: outputs
-  labels_key: labels

@@ -1,7 +1,0 @@
-# @package model.criterion
-_target_: src.common.nn_modules.losses.bi_tempered_loss.bi_tempered_logistic_loss
-_partial_: true
-t1: 0.8
-t2: 1.2
-label_smoothing: 0.0
-num_iters: 5

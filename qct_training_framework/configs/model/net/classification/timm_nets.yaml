@@ -1,7 +1,0 @@
-# @package model.net
-_target_: src.common.nn_modules.nets.classifiers.timm_with_attn.Timm3DWithAttn
-backbone: legacy_seresnet18
-in_chans: 3
-use_mask: False
-num_classes: 2
-drop: 0.1
