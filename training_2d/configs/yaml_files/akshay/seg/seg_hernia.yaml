@@ -1,0 +1,6 @@
+sampling_tags: ['hiatal_hernia']
+heads:  ['hiatal_hernia']
+dice_threshold: [0.2]
+user_class_wts: { 'hiatal_hernia': 1.5}
+loss_wts: { 'hiatal_hernia': 2}
+alpha: 5

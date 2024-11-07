@@ -1,0 +1,112 @@
+## modified nota weights chanegd model changed seg - loss weights  and user  class weights acc to masks available , cls/seg =1/3
+defaults:
+  # - cls: cls_tb
+  # - seg: seg_tb
+  # - files: e2e
+  # - model/optimizer: adama
+  # - model/scheduler: one_cycle_lr
+  - override hydra/hydra_logging: disabled #prevent logging
+  - override hydra/job_logging: disabled #prevent logging
+  - _self_
+
+#prevent logging
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+
+path:
+  checkpoint_dir: "/raid/qxr_ln_trainings/checkpoints"
+  checkpoint_path: ""
+  log_directory: "/raid/qxr_ln_trainings/logs"
+
+
+cls:
+    # sampling_tags: ['nodule', 'normal', 'nota', 'homogenous', 'inhomogenous', 'diffused_nodule', 'regular_border', 'irregular_border']
+    heads: ['irregular_border', 'calcified', 'regular_border', 'solitary', 'tinynodule', 'nodule', 'large', 'cancer']
+    # user_class_wts: {"nodule": 1, "nota": 2, "normal": 2, "homogenous": 0.25, "inhomogenous": 0.25, "diffused_nodule": 0.25, "regular_border": 0.25, "irregular_border": 0.25}
+    # loss_wts : {"nodule": 2, "normal": 1, "homogenous": 2, "inhomogenous": 2, "diffused_nodule": 2, "regular_border": 2, "irregular_border": 2}
+    # alpha: 1
+
+seg:
+    # sampling_tags: ['nodule', 'homogenous', 'inhomogenous', 'diffused_nodule', 'regular_border', 'irregular_border']
+    heads: ['nodule'] #, 'homogenous', 'inhomogenous', 'diffused_nodule', 'regular_border', 'irregular_border']
+    # dice_threshold: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
+    # user_class_wts : {'nodule': 2.0,'homogenous': 1.0, 'inhomogenous': 1.0, 'diffused_nodule': 2.0, 'regular_border': 1.0, 'irregular_border': 1.0}
+    # loss_wts : {'nodule': 2.0, 'homogenous': 2.0, 'inhomogenous': 2.0, 'diffused_nodule': 2.0, 'regular_border': 2.0, 'irregular_border': 2.0}
+    # alpha: 1.0
+
+
+files:
+  # ground_truth_csv: '/raid/training_csvs/9_sep_2M_diffused_col_complete_data.csv'
+  # img_folder_path:  [
+  #   '/raid/qxr_ln_training_data/cxr_data/training/images',
+  #   '/raid/qxr_ln_training_data/fake_data_2d/fake_imgs/',
+  #   ]
+  # annotation_path: [
+  #   '/raid/qxr_ln_training_data/cxr_data/training/annotations/lms_annotations',
+  #   '/raid/qxr_ln_training_data/fake_data_2d/fake_masks',
+  #   ]
+  # testing_csv: '/raid/qxr_ln_trainings/testing/nlst_jsrt.csv'
+  # testing_images:  ['/raid/cxr/qxr_ln_data/jsrt_nlst/data']
+  # testing_annotation_path: ['/raid/cxr/qxr_ln_data/jsrt_nlst/masks']  ##giving a dummy path for now to avoid error
+  # test_data_type: nlst_jsrt
+  testing_csv: "/raid/cxr/qxr_ln_data/LN_test/combined_test_csv_wo_padchest_09-09-24.csv"
+  testing_images:  ['/raid/cxr/qxr_ln_data/segmed/segmed_pngs/', '/raid/cxr/qxr_ln_data/sbri/pngs/', '/raid/cxr/qxr_ln_data/vrad_imgs/' , '/raid/cxr/qxr_ln_data/jsrt_nlst/data/', '/raid/cxr/qxr_ln_data/mgh/all_pngs/' , '/raid/cxr/qxr_ln_data/fda_data/nodule_fda/', '/raid/qxr_ln_training_data/cxr_data/testing/images/']
+  testing_annotation_path: ['/raid/qxr_ln_training_data/cxr_data/testing/test_annotations']  ## doing seg analysis only on internal test - have to generate for bot h fda/nlstjsrt
+  test_data_type: all_data
+  #testing_csv: '/fast_data_e2e11/qxr_ln_trainings/testing/29_aug_5000_sample_data.csv'
+  # testing_images:  ['/models_common_e2e/cxr_data/training/images','/fast_data_e2e11/piyush/fake_data/fake_data_batch_3/fake_imgs', '/fast_data_e2e11/piyush/fake_data/fake_data_batch_4/fake_imgs']
+  # testing_annotation_path: ['/models_common_e2e/cxr_data/training/annotations/lms_annotations'] ##giving a dummy path for now to avoid error
+
+
+model:
+  __target__: cxr_training.nnmodule.nnmodule_controller.LitModel
+  encoder_library: smp
+  encoder: tu-tf_efficientnetv2_m_in21ft1k
+  decoder: UnetPlusPlus
+  load_prt: true
+  pretrained_ckpt: ""
+  in_channels: 1
+  out_channels: 2
+  scheduler:
+    _target_: torch.optim.lr_scheduler.OneCycleLR
+    params:
+      pct_start: 0.3
+      max_lr: 0.1
+      anneal_strategy: cos
+      div_factor: 25
+      steps_per_epoch: 1,
+      epochs: initial_stage_epochs
+  optimizer:
+    _target_: torch.optim.SGD
+    params:
+      lr: 0.1
+      weight_decay: 0.0001
+
+
+trainer:
+  description: ""
+  project: qxr_ln_training
+  model_file: prod_model3
+  recipe_module: cxr_training.recipes.test_recipe.TestRecipe
+  recipe: testing
+  checkpoint_dir: "/raid/nodule_prod_models"
+  model_list: ['v4_nodule-3_cuda.ts']
+  batch_size: 32
+  num_workers: 8
+  gpus: [3]
+
+params:
+  im_size: 960
+  f1_beta_value:
+  inference_on_subset: False
+  inference_on_images: True
+  inference_type: "cls_seg_comb"
+  metric_type: "cls_seg"
+  inference_run: True
+  metric_run: False
+
+
+use_clearml: False
+validate_config: False

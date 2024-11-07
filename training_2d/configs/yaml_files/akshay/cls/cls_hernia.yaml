@@ -1,0 +1,5 @@
+sampling_tags: ['normal','nota', 'hernia']
+heads:  ['hernia']
+user_class_wts: { 'hernia': 1, 'normal': 1.5, 'nota': 1.5}
+loss_wts: { 'hernia': 2}
+alpha: 1

@@ -1,0 +1,147 @@
+defaults:
+  # - cls: cls_tb
+  # - seg: seg_tb
+  # - files: e2e
+  # - model/optimizer: adam
+  # - model/scheduler: one_cycle_lr
+  - override hydra/hydra_logging: disabled #prevent logging
+  - override hydra/job_logging: disabled #prevent logging
+  - _self_
+
+#prevent logging
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+
+path:
+  checkpoint_dir: "/fast_data_e2e11/qxr_ln_trainings/checkpoints"
+  checkpoint_path: ""
+  log_directory: "/fast_data_e2e11/qxr_ln_trainings/logs"
+
+cls: 
+  sampling_tags: [ 'nodule', 'normal', 'homogenous', 'inhomogenous','solitary', 'diffuse', 'regular_border', 'irregular_border','tinynodule', 'calcified', 'cancer', 'large' ,'nota']
+  heads: [ 'nodule', 'normal', 'homogenous', 'inhomogenous','solitary', 'diffuse', 'regular_border', 'irregular_border','tinynodule', 'calcified', 'cancer', 'large']
+  user_class_wts: {'homogenous': 9.96980107928323,
+ 'diffuse': 6.923533782602483,
+ 'nodule': 3.1817859374147197,
+ 'regular_border': 5.432655856494961,
+ 'large': 4.718153144585811,
+ 'calcified': 7.898734506533622,
+ 'tinynodule': 5.659173747552731,
+ 'solitary': 3.8945269528782345,
+ 'inhomogenous': 4.02500639680805,
+ 'nota': 1.0703267513043493,
+ 'cancer': 4.727097363206505,
+ 'irregular_border': 4.545118788587268,
+ 'normal': 1.0}
+
+  loss_wts : {'nodule': 3.1812369897695034,
+  'normal': 1.0,
+  'homogenous': 9.947599187414783,
+  'inhomogenous': 4.025962370058834,
+  'solitary': 3.894152237517562,
+  'diffuse': 6.914762585083279,
+  'regular_border': 5.427531826620126,
+  'irregular_border': 4.545327028131693,
+  'tinynodule': 5.654952022782779,
+  'calcified': 7.89527267821774,
+  'cancer': 4.729926247732154,
+  'large': 4.720442253178729}
+  alpha: 1
+
+seg:
+  sampling_tags: [ 'nodule', 'homogenous', 'inhomogenous','solitary', 'diffuse', 'regular_border', 'irregular_border','tinynodule', 'calcified', 'cancer', 'large']
+  heads: [ 'nodule', 'homogenous', 'inhomogenous','solitary', 'diffuse', 'regular_border', 'irregular_border','tinynodule', 'calcified', 'cancer', 'large']
+  dice_threshold: [0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35]
+  user_class_wts: {'homogenous': 9.818181818181818,
+ 'diffuse': 4.734931660318172,
+ 'nodule': 1.0,
+ 'regular_border': 2.9152947668536746,
+ 'large': 2.1988831466130208,
+ 'calcified': 6.162729658792651,
+ 'tinynodule': 3.1634730538922153,
+ 'solitary': 1.498192130450195,
+ 'inhomogenous': 1.6002625201938612,
+ 'cancer': 2.2072279089199918,
+ 'irregular_border': 2.040556199304751}
+
+  loss_wts:  {'nodule': 1.0,
+  'homogenous': 3.126959487584587,
+  'inhomogenous': 2.296958726095316,
+  'solitary': 2.0738103934669128,
+  'diffuse': 2.1736081302085855,
+  'regular_border': 1.7061073551182924,
+  'irregular_border': 4.264010834791564,
+  'tinynodule': 1.7775953319317175,
+  'calcified': 2.481824744150794,
+  'cancer': 7.5569851550491824,
+  'large': 7.192532626397764}
+  alpha: 6
+  
+
+files:   
+  ground_truth_csv: '/fast_data_e2e11/piyush/training/training_csvs/old_train_data_1.8M.csv'
+  img_folder_path:  ['/models_common_e2e/cxr_data/training/images/']
+  annotation_path: ['/models_common_e2e/cxr_data/training/annotations/lms_annotations']
+
+model:
+  __target__: cxr_training.nnmodule.nnmodule_controller.LitModel
+  encoder: swinv2_tiny_window8_256
+  decoder: unetplusplus
+  in_channels: 1
+  out_channels: 2
+  scheduler:
+    _target_: torch.optim.lr_scheduler.OneCycleLR
+    params:
+      pct_start: 0.3
+      max_lr: 0.0005
+      anneal_strategy: 'cos'
+      div_factor: 250 #self.max_lr / self.optimizer_lr
+      final_div_factor: 100 # self.optimizer_lr / self.final_lr
+      base_momentum: 0.90 # momentum changes beta[0] value in adamw
+      max_momentum: 0.95
+      three_phase: False
+  optimizer:
+    _target_: torch.optim.AdamW
+    params:
+      lr: 0.0005
+      betas: [0.9, 0.99]
+      eps: 1e-08
+      weight_decay: 0.1
+
+trainer:
+  description: "base_training"
+  project: "qxr_ln_training"
+  model_file: "1_sept_swin_tiny_old_data_all_tags_ch_cls_seg_wgt"
+  check_gradients: False
+  recipe_module: cxr_training.recipes.base_recipe.BaseRecipe
+  recipe: cls_seg
+  total_epochs: 100
+  accumulate_grad_batches: 20
+  strategy: "ddp"
+  batch_size: 16
+  precision: 16
+  num_workers: 8
+  train_samples: 40000
+  validation_samples: 10000
+  gpus: [-1]
+  fast_dev_run: False
+
+params:
+  data_loader: cxr_training.data.dataloader.base_dataloader.DataModule
+  dataset_type: cxr_training.data.datasets.cls_seg_dataset.Base_dataset
+  metric_type: "default"
+  im_size: 1024
+  # age_alpha: 0.01
+  loss_type: "dice-bce"
+  sources: []
+  equal_source_sampling: False
+  mask_threshold: 0.2
+  use_real_fake_sampling: True 
+  real_data_wts: 0.7
+  sampler: "train_weighted_val_weighted"
+
+
+use_clearml: True
+validate_config: False

@@ -1,0 +1,111 @@
+defaults:
+  # - cls: cls_tb
+  # - seg: seg_tb
+  # - files: e2e
+  # - model/optimizer: adam
+  # - model/scheduler: one_cycle_lr
+  - override hydra/hydra_logging: disabled #prevent logging
+  - override hydra/job_logging: disabled #prevent logging
+  - _self_
+
+#prevent logging
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+
+path:
+  checkpoint_dir: "/raid/qxr_ln_trainings/checkpoints"
+  checkpoint_path: ""
+  log_directory: "/raid/qxr_ln_trainings/logs"
+
+
+cls: 
+  sampling_tags: ['nodule', 'regular_border', 'irregular_border', 'homogenous', 'inhomogenous', 'normal', 'nota'] 
+  heads: ['nodule', 'regular_border', 'irregular_border', 'homogenous', 'inhomogenous', 'normal']
+  user_class_wts:  {'nodule': 3.1254740435873964, 'regular_border': 4.120448567451853 , 'irregular_border': 5.3393107873337255, 'homogenous': 5.289269720598228 , 'inhomogenous': 5.30327400405999, 'normal': 1.0, 'nota': 1.0703267513043493}
+  loss_wts : { 'nodule' : 3.570616706311101, 'regular_border' : 4.707299528704338 , 'irregular_border': 6.0997570388651505 , 'homogenous': 6.0425889208820385 , 'inhomogenous': 6.058587751071711 , 'normal': 1.0 }
+  alpha: 2
+
+seg:
+  sampling_tags: ['nodule', 'regular_border', 'irregular_border', 'homogenous', 'inhomogenous']
+  heads: ['nodule', 'regular_border', 'irregular_border', 'homogenous', 'inhomogenous']
+  dice_threshold: [0.35, 0.35, 0.35, 0.35, 0.35] 
+  user_class_wts: {'nodule': 1.0, 'inhomogenous': 1.0, 'homogenous': 1.0 , 'irregular_border': 1.0,'regular_border': 1.0}
+  loss_wts: { 'nodule' : 1.0, 'regular_border' : 1.3183435568382738,  'irregular_border' : 1.7083203100696214,  'homogenous' : 1.692309597443406, 'inhomogenous': 1.6967902884572001}
+  alpha: 5
+  
+
+files:   
+  ground_truth_csv: '/raid/piyush/training_csvs/31_aug_1.8M_full_clean_data.csv'
+  img_folder_path:  ['/raid/cxr_data/training/images',
+                     '/raid/piyush/fake_data/fake_data_batch_3/fake_imgs',
+                      '/raid/piyush/fake_data/fake_data_batch_4/fake_imgs']
+  annotation_path: ['/raid/cxr_data/training/annotations/lms_annotations',
+                    '/raid/piyush/fake_data/fake_data_batch_4/fake_masks',
+                    '/raid/piyush/fake_data/fake_data_batch_3/fake_masks']
+
+
+
+model:
+  __target__: cxr_training.nnmodule.nnmodule_controller.LitModel
+  encoder: swinv2_base_window8_256
+  decoder: unetplusplus
+  in_channels: 1
+  out_channels: 2
+  scheduler:
+    _target_: torch.optim.lr_scheduler.OneCycleLR
+    params:
+      pct_start: 0.3
+      max_lr: 0.0005
+      anneal_strategy: 'cos'
+      div_factor: 250 #self.max_lr / self.optimizer_lr
+      final_div_factor: 100 # self.optimizer_lr / self.final_lr
+      base_momentum: 0.90 # momentum changes beta[0] value in adamw
+      max_momentum: 0.95
+      three_phase: False
+  optimizer:
+    _target_: torch.optim.AdamW
+    params:
+      lr: 0.0005
+      betas: [0.9, 0.99]
+      eps: 1e-08
+      weight_decay: 0.1
+
+trainer:
+  description: "base_training"
+  project: "qxr_ln_training"
+  model_file: "6_sept_swin_base_unet_corrected_seg_samp_bug"
+  check_gradients: False
+  recipe_module: cxr_training.recipes.base_recipe.BaseRecipe
+  recipe: cls_seg
+  total_epochs: 150
+  accumulate_grad_batches: 5
+  strategy: "ddp"
+  batch_size: 8
+  precision: 16
+  num_workers: 8
+  train_samples: 40000
+  validation_samples: 10000
+  gpus: [-1]
+  fast_dev_run: False
+
+params:
+  data_loader: cxr_training.data.dataloader.base_dataloader.DataModule
+  dataset_type: cxr_training.data.datasets.cls_seg_dataset.Base_dataset
+  metric_type: "default"
+  im_size: 1024
+  # age_alpha: 0.01
+  loss_type: "sq_dice-bce"
+  sources: []
+  equal_source_sampling: False
+  mask_threshold: 0.2
+  use_real_fake_sampling: True
+  real_data_wts: 0.3
+  use_3d_2d_fake_data_sampling: False
+  data_weights_3d: 0.3
+  sampler: "train_weighted_val_random"
+
+
+use_clearml: True
+validate_config: False

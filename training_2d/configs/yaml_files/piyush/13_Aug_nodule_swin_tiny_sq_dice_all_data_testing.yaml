@@ -1,0 +1,91 @@
+defaults:
+  # - cls: cls_tb
+  # - seg: seg_tb
+  # - files: e2e
+  # - model/optimizer: adam
+  # - model/scheduler: one_cycle_lr
+  - override hydra/hydra_logging: disabled #prevent logging
+  - override hydra/job_logging: disabled #prevent logging
+  - _self_
+## model - '/fast_data_e2e11/qxr_ln_trainings/checkpoints/base_training/12_Aug_swin_tiny_base_unetplusplus_sq_dice_loss/model_530-last.ckpt
+
+#prevent logging
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+
+path:
+  checkpoint_dir: "/fast_data_e2e11/qxr_ln_trainings/checkpoints"
+  checkpoint_path: ""
+  log_directory: "/fast_data_e2e11/qxr_ln_trainings/logs"
+
+cls:
+  sampling_tags: ['nodule','nipple_shadow', 'normal']
+  heads: ['nodule','nipple_shadow','normal']
+  user_class_wts: {'nodule': 1,'nipple_shadow': 1, 'normal': 1}   
+  loss_wts: {'nodule': 1.5,'nipple_shadow': 2.6, 'normal': 1.0}
+  alpha: 2
+
+seg:
+  sampling_tags: ['nodule','nipple_shadow']
+  heads:  ['nodule','nipple_shadow']
+  dice_threshold: [0.2,0.2]
+  user_class_wts: { 'nodule': 1.0,'nipple_shadow': 1.0}
+  loss_wts: { 'nodule': 1.0,'nipple_shadow': 1.7}
+  alpha: 5
+
+files:   
+  testing_csv: '/fast_data_e2e11/qxr_ln_trainings/testing_shreshtha/combined_test_csv_2.5M_13-08-24.csv'
+  testing_images:  ['/fast_data_e2e_1/cxr/qxr_ln_data/padchest/pngs/pngs_1440/', '/fast_data_e2e_1/cxr/qxr_ln_data/segmed/segmed_pngs/', '/fast_data_e2e_1/cxr/qxr_ln_data/sbri/pngs/', '/fast_data_e2e_1/cxr/qxr_ln_data/vrad_imgs/' , '/fast_data_e2e_1/cxr/qxr_ln_data/jsrt_nlst/data/', '/fast_data_e2e_1/cxr/qxr_ln_data/mgh/all_pngs/' , '/fast_data_e2e_1/cxr/qxr_ln_data/fda_data/nodule_fda/', '/models_common_e2e/cxr_data/testing/images/']
+  testing_annotation_path: ['/models_common_e2e/cxr_data/testing/test_annotations']  ## doing seg analysis only on internal test - have to generate for bot h fda/nlstjsrt
+
+model:
+  __target__: cxr_training.nnmodule.nnmodule_controller.LitModel
+  encoder: swinv2_base_window8_256
+  decoder: unetplusplus
+  in_channels: 1
+  out_channels: 2
+  scheduler:
+    _target_: torch.optim.lr_scheduler.OneCycleLR
+    params:
+      pct_start: 0.3
+      max_lr: 0.0005
+      anneal_strategy: 'cos'
+      div_factor: 250 #self.max_lr / self.optimizer_lr
+      final_div_factor: 100 # self.optimizer_lr / self.final_lr
+      base_momentum: 0.90 # momentum changes beta[0] value in adamw
+      max_momentum: 0.95
+      three_phase: False
+  optimizer:
+    _target_: torch.optim.AdamW
+    params:
+      lr: 0.0005
+      betas: [0.9, 0.99]
+      eps: 1e-08
+      weight_decay: 0.1
+
+trainer:
+    description: "base_training"
+    project: "qxr_ln_training"
+    model_file: "12_Aug_swin_tiny_base_unetplusplus_sq_dice_loss"
+    batch_size: 16
+    num_workers: 4
+    gpus: [0]
+    recipe: "testing"
+    recipe_module: cxr_training.recipes.test_recipe.TestRecipe
+    checkpoint_dir: "/fast_data_e2e11/qxr_ln_trainings/checkpoints"
+    model_list: ['model_530-last.ckpt']
+
+params:
+    im_size: 1024
+    f1_beta_value:
+    inference_on_subset: False
+    inference_on_images: False
+    inference_type: "cls_seg"
+    metric_type: "cls_seg"
+    inference_run: True
+    metric_run: True
+
+use_clearml: False
+validate_config: False

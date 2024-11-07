@@ -1,0 +1,98 @@
+defaults:
+  # - cls: cls_tb
+  # - seg: seg_tb
+  # - files: e2e
+  # - model/optimizer: adam
+  # - model/scheduler: one_cycle_lr
+  - override hydra/hydra_logging: disabled #prevent logging
+  - override hydra/job_logging: disabled #prevent logging
+  - _self_
+
+#prevent logging
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+
+path:
+  checkpoint_dir: "/fast_data_e2e11/qxr_ln_trainings/checkpoints"
+  checkpoint_path: ""
+  log_directory: "/fast_data_e2e11/qxr_ln_trainings/logs"
+
+cls:
+  sampling_tags: ['nodule','nipple_shadow', 'normal']
+  heads: ['nodule','nipple_shadow','normal']
+  user_class_wts: {'nodule': 1,'nipple_shadow': 1, 'normal': 1}   
+  loss_wts: {'nodule': 1.5,'nipple_shadow': 2.6, 'normal': 1.0}
+  alpha: 2
+
+seg:
+  sampling_tags: ['nodule','nipple_shadow']
+  heads:  ['nodule','nipple_shadow']
+  dice_threshold: [0.2,0.2]
+  user_class_wts: { 'nodule': 1.0,'nipple_shadow': 1.0}
+  loss_wts: { 'nodule': 1.0,'nipple_shadow': 1.7}
+  alpha: 5
+
+files:   
+  ground_truth_csv: '/fast_data_e2e11/piyush/training/training_csvs/training_data_20240805_173856.csv'
+  img_folder_path:  ['/fast_data_e2e11/piyush/fake_data/fake_imgs_batch_2/', '/models_common_e2e/cxr_data/training/images/']
+  annotation_path: ['/fast_data_e2e11/piyush/fake_data/all_fake_masks/', '/models_common_e2e/cxr_data/training/annotations/']
+
+model:
+  __target__: cxr_training.nnmodule.nnmodule_controller.LitModel
+  encoder: swinv2_tiny_window8_256
+  decoder: unetplusplus
+  in_channels: 1
+  out_channels: 2
+  scheduler:
+    _target_: torch.optim.lr_scheduler.OneCycleLR
+    params:
+      pct_start: 0.3
+      max_lr: 0.0005
+      anneal_strategy: 'cos'
+      div_factor: 250 #self.max_lr / self.optimizer_lr
+      final_div_factor: 100 # self.optimizer_lr / self.final_lr
+      base_momentum: 0.90 # momentum changes beta[0] value in adamw
+      max_momentum: 0.95
+      three_phase: False
+  optimizer:
+    _target_: torch.optim.AdamW
+    params:
+      lr: 0.0005
+      betas: [0.9, 0.99]
+      eps: 1e-08
+      weight_decay: 0.1
+
+trainer:
+  description: "base_training"
+  project: "qxr_ln_training"
+  model_file: "7_Aug_swin_tiny_base_unetplusplus_dice_loss"
+  check_gradients: False
+  recipe_module: cxr_training.recipes.base_recipe.BaseRecipe
+  recipe: cls_seg
+  total_epochs: 100
+  accumulate_grad_batches: 20
+  strategy: "ddp"
+  batch_size: 32
+  precision: 16
+  num_workers: 2
+  train_samples: 40000
+  validation_samples: 10000
+  gpus: [-1]
+  fast_dev_run: False
+
+params:
+  data_loader: cxr_training.data.dataloader.base_dataloader.DataModule
+  dataset_type: cxr_training.data.datasets.cls_seg_dataset.Base_dataset
+  metric_type: "default"
+  im_size: 1024
+  # age_alpha: 0.01
+  loss_type: "dice-bce"
+  sources: []
+  equal_source_sampling: False
+  mask_threshold: 0.2
+  sampler: "train_weighted_val_random"
+
+use_clearml: True
+validate_config: False

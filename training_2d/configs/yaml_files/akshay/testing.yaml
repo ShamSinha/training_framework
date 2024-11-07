@@ -1,0 +1,43 @@
+defaults:
+    - cls: test_cls
+    - seg: test_seg
+    - files: test_e2e
+    - override hydra/hydra_logging: disabled #prevent logging
+    - override hydra/job_logging: disabled #prevent logging
+    - _self_
+
+#prevent logging
+hydra:
+    output_subdir: null
+    run:
+        dir: .
+
+trainer:
+    description: "adult_tb_cls_seg_age"
+    project: "TB_improved"
+    model_file: "swinv2_base_8_window_TB_only_cls_age_seg_focus_frozen_unetplusplus"
+    batch_size: 16
+    num_workers: 4
+    gpus: [0]
+    recipe: "testing"
+    recipe_module: cxr_training.recipes.base_recipe.TestRecipe
+    checkpoint_dir: "/fast_data_2d_3/akshay/checkpoint"
+    model_list: []
+
+params:
+    im_size: 1024
+    f1_beta_value:
+    inference_on_subset: False
+    inference_on_images: False
+    inference_type: "cls_seg"
+    metric_type: "cls_seg"
+    inference_run: True
+    metric_run: True
+
+use_clearml: False
+
+cls:
+    heads: ['adult_tb']
+
+seg:
+    heads: ['adult_tb']

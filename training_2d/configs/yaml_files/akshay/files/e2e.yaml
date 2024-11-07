@@ -1,0 +1,4 @@
+#ground_truth_csv: '/fast_data_2d_3/cxr_data/training/csvs/training_master_updated_new_tb_added_2024_06_24_corrected.csv'
+ground_truth_csv: '/models_common_e2e/cxr_data/training/csvs/training_master_updated_new_tb_age_added_relabelled_2024_07_23.csv'
+img_folder_path:  '/models_common_e2e/cxr_data/training/images/'
+annotation_path: '/models_common_e2e/cxr_data/training/annotations/'

@@ -1,0 +1,12 @@
+_target_: torch.optim.lr_scheduler.OneCycleLR
+params:
+  pct_start: 0.3
+  max_lr: 0.001
+  anneal_strategy: 'cos'
+  div_factor: 250 #self.max_lr / self.optimizer_lr
+  final_div_factor: 100 # self.optimizer_lr / self.final_lr
+  epochs: ${trainer.total_epochs}
+  steps_per_epoch: 40
+  base_momentum: 0.90 # momentum changes beta[0] value in adamw
+  max_momentum: 0.90
+  three_phase: False

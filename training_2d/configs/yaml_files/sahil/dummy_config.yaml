@@ -1,0 +1,68 @@
+defaults:
+  - base_config
+  - cls: cls_nodules
+  - seg: seg_nodules
+  - files: e2e
+  - model/optimizer: sgd
+  - model/optimizer/scheduler: one_cycle_lr
+  - override hydra/hydra_logging: disabled #prevent logging
+  - override hydra/job_logging: disabled #prevent logging
+  - _self_
+
+#prevent logging
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+
+path:
+  # checkpoint_dir: "/cache/fast_data_nas8/sahil_qxr_predictions/checkpoint_3_10k"
+  checkpoint_dir: "dummy_testing"
+  checkpoint_path: ""
+
+trainer:
+  description: "CXR_all_sahil_v3_swin_v2"
+  project: "CXR_all_sahil_v3"
+  model_file: "swinv2_cxr_ll"
+  recipe: "cls_seg"
+  total_epochs: 1
+  accumulate_grad_batches: 60
+  strategy: "ddp_find_unused_parameters_true"
+  batch_size: 8
+  precision: 16
+  num_workers: 4
+  train_samples: 300 # earlier 100000
+  validation_samples: 100
+  gpus: [-1]
+  fast_dev_run: False
+
+params:
+  metric_type: "default"
+  im_size: 768
+  loss_type: "dice-bce"
+  sources:
+    [
+      medanta,
+      max,
+      medall,
+      ims,
+      dmims,
+      ca,
+      cdp,
+      medanta,
+      fiveceu,
+      fivecin,
+      chex,
+      mim,
+    ]
+  equal_source_sampling: False
+  mask_threshold: 0.2
+  sampler: "weighted"
+
+model:
+  encoder: "swinv2_base_window12to24_192to384.ms_in22k_ft_in1k"
+  decoder: "unet"
+  in_channels: 1
+  out_channels: 2
+
+use_clearml: True

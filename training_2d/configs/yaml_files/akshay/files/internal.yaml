@@ -1,0 +1,3 @@
+ground_truth_csv: "/data_nas5/cxr/akshay/tb/training_master_updated_new_tb_added_2024_06_24_corrected.csv"
+img_folder_path: "/cache/fast_data_nas6/cxr/cxr_data/images/"
+annotation_path: "/cache/fast_data_nas6/cxr/cxr_data/annotations/"
