@@ -1,3 +1,0 @@
-testing_csv: '/models_common_e2e/cxr_data/testing/csvs/testing_TB_only_updated_new_tb_added_with_chai_gender_bad_removed_2024_07_15.csv'
-testing_images: '/models_common_e2e/cxr_data/testing/images/'
-testing_annotation_path: '/models_common_e2e/cxr_data/testing/test_annotations/'

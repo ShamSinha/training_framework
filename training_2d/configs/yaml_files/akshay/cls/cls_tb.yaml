@@ -1,5 +1,0 @@
-sampling_tags: ['adult_tb','normal', 'nota']
-heads: ['adult_tb','normal']
-user_class_wts: {'adult_tb': 2,'normal': 1, 'nota': 1}
-loss_wts: {'adult_tb': 2, 'normal': 1}
-alpha: 2

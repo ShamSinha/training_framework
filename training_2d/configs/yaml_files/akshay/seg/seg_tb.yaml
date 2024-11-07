@@ -1,6 +1,0 @@
-sampling_tags: ['adult_tb']
-heads:  ['adult_tb']
-dice_threshold: [0.2]
-user_class_wts: { 'adult_tb': 2}
-loss_wts: { 'adult_tb': 2}
-alpha: 5

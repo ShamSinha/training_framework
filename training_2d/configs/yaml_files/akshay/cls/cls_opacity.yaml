@@ -1,5 +1,0 @@
-sampling_tags: ['opacity','normal','nota', 'consolidation', 'fibrosis', 'nodule','peffusion','atelectasis']
-heads:  ['opacity','consolidation', 'nodule','fibrosis','peffusion','atelectasis','normal']
-user_class_wts: { 'opacity': 1, 'consolidation': 1, 'nodule': 1, 'fibrosis': 1, 'peffusion': 1,'atelectasis': 1, 'normal': 2, 'nota': 2}
-loss_wts: [2, 2, 2, 2, 2, 2, 1]
-alpha: 1
