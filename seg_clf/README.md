@@ -27,28 +27,3 @@ conda activate myenv
 pip install -r requirements.txt
 ```
 
-- Test the installation and the features on [toy dataset](https://github.com/qureai/qct_training_framework/wiki/Documentations#toy-dataset)
-
-## Features
-
-- [Discussion on changes to the repo.](https://github.com/qureai/qct_training_framework/discussions/58)
-
-### 1. Classification
-
-- [Losses](https://github.com/qureai/qct_training_framework/discussions/59)
-- [Networks](<>)
-
-### 2. Segmentation
-
-- [Losses](https://github.com/qureai/qct_training_framework/discussions/56)
-- [Networks](https://github.com/qureai/qct_training_framework/discussions/55)
-
-## Documentation
-
-[Documentation](https://github.com/qureai/qct_training_framework/wiki/Documentations)
-
-## Contribution guide
-
-## Who do I talk to?
-
-Vikash, Souvik
