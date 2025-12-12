@@ -13,8 +13,6 @@ Deeplearning Training Framework for classification and segmentation tasks.
 
 ```
 # clone project
-git clone https://github.com/qureai/qct_training_framework
-cd qct_training_framework
 
 # [OPTIONAL] create conda environment
 conda create -n myenv python=3.9
